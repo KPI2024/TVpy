@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-快活林 - 四壳通用Python Spider
-站点: https://xkb.khl4.xyz
+黑料论坛 - 四壳通用Python Spider
+站点: https://put.hllt2.life
 """
 
 import re, json, urllib.request, urllib.parse, urllib.error
@@ -23,9 +23,9 @@ except Exception:
         def destroy(self): pass
 
 class Spider(Spider):
-    domain = "https://xkb.khl4.xyz"
-    siteName = "快活林"
-    CATEGORIES = [("20","亚洲情色"),("21","制服师生"),("22","卡通动漫"),("23","三级伦理"),("24","强奸乱伦"),("25","偷拍自拍"),("26","中文字幕"),("27","欧美性爱"),("28","人妻熟女"),("29","无码专区")]
+    domain = "https://put.hllt2.life"
+    siteName = "黑料论坛"
+    CATEGORIES = [("20","亚洲情色"),("21","强奸乱伦"),("22","偷拍自拍"),("23","风骚寡妇"),("24","制服师生"),("25","欧美性爱"),("26","JAV高清"),("27","VR虚拟"),("28","无码视频"),("29","有码视频"),("30","国产视频"),("31","女同"),("32","动漫"),("33","三级伦理")]
     UA_CHROME = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
     
     def __init__(self):
@@ -57,10 +57,10 @@ class Spider(Spider):
         videos = []
         seen = set()
         
-        # 找所有article标签
-        articles = re.findall(r'<article[^>]*>(.*?)</article>', html, re.S)
+        # article.cover结构
+        articles = re.findall(r'<article>(.*?)</article>', html, re.S)
         for art in articles:
-            m = re.search(r'href="/(\d+)\.html"', art)
+            m = re.search(r'href="/cn/home/web/index.php/vod/play/id/(\d+)/', art)
             if not m: continue
             vid = m.group(1)
             if vid in seen or len(vid) < 5: continue
@@ -68,10 +68,10 @@ class Spider(Spider):
             
             # 标题
             name = ""
-            t = re.search(r'<h4><a[^>]*>(.*?)</a></h4>', art, re.S)
+            t = re.search(r'alt="([^"]+)"', art)
             if t:
-                name = re.sub(r'<[^>]+>', '', t.group(1)).strip()
-            if not name or len(name) < 2: continue
+                name = t.group(1).strip()
+            if not name or len(name) < 3: continue
             
             # 封面
             pic = ""
@@ -83,12 +83,31 @@ class Spider(Spider):
         return videos
 
     def homeContent(self, filter=False):
-        return {"class": [{"type_id": c[0], "type_name": c[1]} for c in self.CATEGORIES], "filters": {}}
+        # 首页标签做子分类（铁律：标签做子分类）
+        tags = ["强奸", "丈母娘", "老太太", "气质", "无码", "人妻", "制服", "自拍", "偷拍", "国产", "日韩", "欧美"]
+        filters = {}
+        for cid, cname in self.CATEGORIES:
+            filters[cid] = [{
+                "key": "tag",
+                "name": "热门标签",
+                "value": [{"n": t, "v": t} for t in tags]
+            }]
+        return {"class": [{"type_id": c[0], "type_name": c[1]} for c in self.CATEGORIES], "filters": filters}
     
     def categoryContent(self, tid, pg, filter=False, extend=None):
         pg = int(pg) if pg else 1
-        url = f"{self.domain}/vodtype/{tid}.html"
-        if pg > 1: url = f"{self.domain}/vodtype/{tid}-{pg}.html"
+        extend = extend or {}
+        tag = extend.get("tag", "")
+        
+        if tag:
+            # 标签搜索页
+            url = f"{self.domain}/s/{tag}.html"
+            if pg > 1: url = f"{self.domain}/s/{tag}-{pg}.html"
+        else:
+            # 普通分类页
+            url = f"{self.domain}/cn/home/web/index.php/vod/type/id/{tid}.html"
+            if pg > 1: url = f"{self.domain}/cn/home/web/index.php/vod/type/id/{tid}-{pg}.html"
+        
         html = self._fetch(url)
         videos = self._parse_list(html)
         return {"page": pg, "pagecount": pg, "limit": 30, "total": len(videos), "list": videos}

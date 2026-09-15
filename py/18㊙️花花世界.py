@@ -1,8 +1,8 @@
 
 # -*- coding: utf-8 -*-
-# 茄子精品 Spider
-# 站点: https://oxh.qzjp4.beer/qzjp/
-# 真实结构: <li class="fed-list-item"> + <a class="fed-list-pics" data-original> + player_data.url
+# 花花世界 Spider
+# 站点: https://cun.hhsj8.beer/hhsj/
+# 真实结构: <a href><div class="log"><img src></div><div class="title">标题</div></a> + player_data.url
 
 try:
     from base.spider import Spider as BaseSpider
@@ -22,7 +22,7 @@ except ImportError:
 class Spider(BaseSpider):
 
     def init(self, extend=""):
-        self.siteUrl = "https://oxh.qzjp4.beer"
+        self.siteUrl = "https://cun.hhsj8.beer"
         self.headers = {
             "User-Agent": "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
             "Referer": self.siteUrl + "/",
@@ -31,17 +31,23 @@ class Spider(BaseSpider):
     def homeContent(self, filter):
         result = {}
         class_parse = [
-            {"type_name": "美女写真", "type_id": "20"},
-            {"type_name": "国产精品", "type_id": "21"},
-            {"type_name": "无码专区", "type_id": "22"},
-            {"type_name": "中文字幕", "type_id": "23"},
+            {"type_name": "亚洲情色", "type_id": "20"},
+            {"type_name": "制服师生", "type_id": "21"},
+            {"type_name": "卡通动漫", "type_id": "22"},
+            {"type_name": "丝袜美腿", "type_id": "23"},
             {"type_name": "强奸乱伦", "type_id": "24"},
-            {"type_name": "人妻熟女", "type_id": "25"},
-            {"type_name": "亚洲情色", "type_id": "26"},
-            {"type_name": "制服丝袜", "type_id": "27"},
-            {"type_name": "SM捆绑", "type_id": "28"},
-            {"type_name": "自淫系列", "type_id": "29"},
-            {"type_name": "三级伦理", "type_id": "30"},
+            {"type_name": "偷拍自拍", "type_id": "25"},
+            {"type_name": "4K岛国", "type_id": "26"},
+            {"type_name": "中文字幕", "type_id": "27"},
+            {"type_name": "欧美性爱", "type_id": "28"},
+            {"type_name": "人妻熟女", "type_id": "29"},
+            {"type_name": "无码专区", "type_id": "30"},
+            {"type_name": "SM捆绑", "type_id": "31"},
+            {"type_name": "自淫系列", "type_id": "32"},
+            {"type_name": "拳交系列", "type_id": "33"},
+            {"type_name": "男同女同", "type_id": "35"},
+            {"type_name": "国产精品", "type_id": "36"},
+            {"type_name": "三级伦理", "type_id": "37"},
         ]
         result["class"] = class_parse
         result["filters"] = {}
@@ -59,28 +65,28 @@ class Spider(BaseSpider):
         resp = urllib.request.urlopen(req, timeout=15)
         html = resp.read().decode("utf-8", errors="ignore")
         
-        # 真实结构: <li class="fed-list-item"><a class="fed-list-pics" href="..." data-original="..."><a class="fed-list-title" href="...">标题</a></li>
+        # 真实结构: <div class="video-item"><a href="...vod/play/id/..."><div class="log"><img src="..."/></div><div class="title">标题</div></a></div>
         items = re.findall(
-            r'<a[^>]*class="fed-list-pics[^"]*"[^>]*href="([^"]*)"[^>]*data-original="([^"]*)"[^>]*>.*?<a[^>]*class="fed-list-title[^"]*"[^>]*>([^<]*)</a>',
+            r'<a[^>]*href="([^"]*vod/play/id/[^"]*)"[^>]*>.*?<img[^>]*src="([^"]*)"[^>]*>.*?<div[^>]*class="title"[^>]*>([^<]*)</div>',
             html, re.S
         )
         
         video_list = []
-        for href, pic, title in items[:120]:
+        for href, pic, title in items[:60]:
             # 提取vod_id
             m = re.search(r'/id/(\d+)/', href)
             vid = m.group(1) if m else href
             video_list.append({
                 "vod_id": vid,
-                "vod_name": title,
+                "vod_name": title.strip(),
                 "vod_pic": pic,
                 "vod_remarks": "",
             })
         result["list"] = video_list
         result["page"] = pg
         result["pagecount"] = 100
-        result["limit"] = 120
-        result["total"] = 12000
+        result["limit"] = 60
+        result["total"] = 6000
         return result
 
     def detailContent(self, ids):
@@ -146,4 +152,4 @@ class Spider(BaseSpider):
         return False
 
     def getName(self):
-        return "茄子精品"
+        return "花花世界"

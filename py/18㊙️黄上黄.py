@@ -1,8 +1,8 @@
 
 # -*- coding: utf-8 -*-
-# 茄子精品 Spider
-# 站点: https://oxh.qzjp4.beer/qzjp/
-# 真实结构: <li class="fed-list-item"> + <a class="fed-list-pics" data-original> + player_data.url
+# 黄上黄 Spider
+# 站点: https://bzz.hsh6.homes/hsh/
+# 真实结构: <a href><div class="thumb-overlay"><img src></div><span class="video-title">标题</span></a> + player_data.url
 
 try:
     from base.spider import Spider as BaseSpider
@@ -22,7 +22,7 @@ except ImportError:
 class Spider(BaseSpider):
 
     def init(self, extend=""):
-        self.siteUrl = "https://oxh.qzjp4.beer"
+        self.siteUrl = "https://bzz.hsh6.homes"
         self.headers = {
             "User-Agent": "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
             "Referer": self.siteUrl + "/",
@@ -31,17 +31,17 @@ class Spider(BaseSpider):
     def homeContent(self, filter):
         result = {}
         class_parse = [
-            {"type_name": "美女写真", "type_id": "20"},
-            {"type_name": "国产精品", "type_id": "21"},
-            {"type_name": "无码专区", "type_id": "22"},
-            {"type_name": "中文字幕", "type_id": "23"},
-            {"type_name": "强奸乱伦", "type_id": "24"},
-            {"type_name": "人妻熟女", "type_id": "25"},
-            {"type_name": "亚洲情色", "type_id": "26"},
-            {"type_name": "制服丝袜", "type_id": "27"},
-            {"type_name": "SM捆绑", "type_id": "28"},
-            {"type_name": "自淫系列", "type_id": "29"},
-            {"type_name": "三级伦理", "type_id": "30"},
+            {"type_name": "主播网红", "type_id": "20"},
+            {"type_name": "偷拍自拍", "type_id": "21"},
+            {"type_name": "人妻熟女", "type_id": "22"},
+            {"type_name": "强奸乱伦", "type_id": "23"},
+            {"type_name": "制服丝袜", "type_id": "24"},
+            {"type_name": "自慰变态", "type_id": "25"},
+            {"type_name": "国产精品", "type_id": "26"},
+            {"type_name": "亚洲情色", "type_id": "27"},
+            {"type_name": "卡通动漫", "type_id": "28"},
+            {"type_name": "三级伦理", "type_id": "29"},
+            {"type_name": "欧美精品", "type_id": "30"},
         ]
         result["class"] = class_parse
         result["filters"] = {}
@@ -59,9 +59,9 @@ class Spider(BaseSpider):
         resp = urllib.request.urlopen(req, timeout=15)
         html = resp.read().decode("utf-8", errors="ignore")
         
-        # 真实结构: <li class="fed-list-item"><a class="fed-list-pics" href="..." data-original="..."><a class="fed-list-title" href="...">标题</a></li>
+        # 真实结构: <a href="/cn/home/web/index.php/vod/play/id/123/..."><div class="thumb-overlay"><img src="..."/></div><span class="video-title">标题</span></a>
         items = re.findall(
-            r'<a[^>]*class="fed-list-pics[^"]*"[^>]*href="([^"]*)"[^>]*data-original="([^"]*)"[^>]*>.*?<a[^>]*class="fed-list-title[^"]*"[^>]*>([^<]*)</a>',
+            r'<a[^>]*href="([^"]*vod/play/id/[^"]*)"[^>]*>.*?<img[^>]*src="([^"]*)"[^>]*/>.*?<span[^>]*class="video-title[^"]*"[^>]*>([^<]*)</span>',
             html, re.S
         )
         
@@ -146,4 +146,4 @@ class Spider(BaseSpider):
         return False
 
     def getName(self):
-        return "茄子精品"
+        return "黄上黄"

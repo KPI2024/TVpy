@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-快活林 - 四壳通用Python Spider
-站点: https://xkb.khl4.xyz
+工口av - 四壳通用Python Spider
+站点: https://pjl.gkav3.yachts
 """
 
 import re, json, urllib.request, urllib.parse, urllib.error
@@ -23,9 +23,9 @@ except Exception:
         def destroy(self): pass
 
 class Spider(Spider):
-    domain = "https://xkb.khl4.xyz"
-    siteName = "快活林"
-    CATEGORIES = [("20","亚洲情色"),("21","制服师生"),("22","卡通动漫"),("23","三级伦理"),("24","强奸乱伦"),("25","偷拍自拍"),("26","中文字幕"),("27","欧美性爱"),("28","人妻熟女"),("29","无码专区")]
+    domain = "https://pjl.gkav3.yachts"
+    siteName = "工口av"
+    CATEGORIES = [("1","乱伦"),("2","出轨"),("3","制服"),("4","自慰"),("5","偷拍"),("20","自拍"),("21","国产"),("22","同性"),("23","日韩"),("24","欧美")]
     UA_CHROME = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
     
     def __init__(self):
@@ -57,38 +57,60 @@ class Spider(Spider):
         videos = []
         seen = set()
         
-        # 找所有article标签
-        articles = re.findall(r'<article[^>]*>(.*?)</article>', html, re.S)
-        for art in articles:
-            m = re.search(r'href="/(\d+)\.html"', art)
+        # 1. stui-vodlycms_list__box结构
+        items = re.findall(r'<div class="stui-vodlycms_list__box">(.*?)</div>\s*</div>', html, re.S)
+        for item in items:
+            m = re.search(r'href="/(\d+)\.html"[^>]*title="([^"]+)"[^>]*data-original="([^"]+)"', item)
             if not m: continue
-            vid = m.group(1)
+            vid, name, pic = m.group(1), m.group(2).strip(), m.group(3)
             if vid in seen or len(vid) < 5: continue
             seen.add(vid)
-            
-            # 标题
-            name = ""
-            t = re.search(r'<h4><a[^>]*>(.*?)</a></h4>', art, re.S)
-            if t:
-                name = re.sub(r'<[^>]+>', '', t.group(1)).strip()
-            if not name or len(name) < 2: continue
-            
-            # 封面
+            if not name or len(name) < 3: continue
+            videos.append({"vod_id": vid, "vod_name": name, "vod_pic": pic, "vod_remarks": ""})
+        
+        if videos: return videos
+        
+        # 2. a标签通用解析
+        items = re.findall(r'<a[^>]*href="/(\d+)\.html"[^>]*title="([^"]+)"[^>]*>(.*?)</a>', html, re.S)
+        for vid, name, item in items:
+            if vid in seen or len(vid) < 5: continue
+            seen.add(vid)
+            name = name.strip()
+            if not name or len(name) < 3: continue
             pic = ""
-            p = re.search(r'<img[^>]*src="([^"]+\.(?:jpg|jpeg|png))"', art)
+            p = re.search(r'<img[^>]*data-original="([^"]+\.(?:jpg|jpeg|png))"', item)
+            if not p: p = re.search(r'<img[^>]*src="([^"]+\.(?:jpg|jpeg|png))"', item)
             if p: pic = p.group(1)
-            
             videos.append({"vod_id": vid, "vod_name": name, "vod_pic": pic, "vod_remarks": ""})
         
         return videos
 
     def homeContent(self, filter=False):
-        return {"class": [{"type_id": c[0], "type_name": c[1]} for c in self.CATEGORIES], "filters": {}}
+        # 首页标签做子分类（铁律：标签做子分类）
+        tags = ["Ai", "喷水", "一色桃子", "新娘", "微胖", "裤袜", "美脚", "叔母", "女优", "鹫尾芽衣", "苗条", "长泽梓"]
+        filters = {}
+        for cid, cname in self.CATEGORIES:
+            filters[cid] = [{
+                "key": "tag",
+                "name": "热门标签",
+                "value": [{"n": t, "v": t} for t in tags]
+            }]
+        return {"class": [{"type_id": c[0], "type_name": c[1]} for c in self.CATEGORIES], "filters": filters}
     
     def categoryContent(self, tid, pg, filter=False, extend=None):
         pg = int(pg) if pg else 1
-        url = f"{self.domain}/vodtype/{tid}.html"
-        if pg > 1: url = f"{self.domain}/vodtype/{tid}-{pg}.html"
+        extend = extend or {}
+        tag = extend.get("tag", "")
+        
+        if tag:
+            # 标签搜索页
+            url = f"{self.domain}/s/{tag}.html"
+            if pg > 1: url = f"{self.domain}/s/{tag}-{pg}.html"
+        else:
+            # 普通分类页
+            url = f"{self.domain}/vodtype/{tid}.html"
+            if pg > 1: url = f"{self.domain}/vodtype/{tid}-{pg}.html"
+        
         html = self._fetch(url)
         videos = self._parse_list(html)
         return {"page": pg, "pagecount": pg, "limit": 30, "total": len(videos), "list": videos}

@@ -29,13 +29,6 @@
       "ext": ""
     },
     {
-      "key": "JavDB",
-      "name": "JavDB",
-      "type": 3,
-      "api": "https://raw.githubusercontent.com/jwarrenrzflynn/TVpy/main/py/18㊙️JavDB.py",
-      "ext": ""
-    },
-    {
       "key": "Porn00",
       "name": "Porn00",
       "type": 3,
@@ -239,13 +232,6 @@
       "ext": ""
     },
     {
-      "key": "百年直播",
-      "name": "百年直播",
-      "type": 3,
-      "api": "https://raw.githubusercontent.com/jwarrenrzflynn/TVpy/main/py/18㊙️百年直播.py",
-      "ext": ""
-    },
-    {
       "key": "皇朝会所",
       "name": "皇朝会所",
       "type": 3,
@@ -257,13 +243,6 @@
       "name": "秋霞影院",
       "type": 3,
       "api": "https://raw.githubusercontent.com/jwarrenrzflynn/TVpy/main/py/18㊙️秋霞影院.py",
-      "ext": ""
-    },
-    {
-      "key": "聚合影视",
-      "name": "聚合影视",
-      "type": 3,
-      "api": "https://raw.githubusercontent.com/jwarrenrzflynn/TVpy/main/py/18㊙️聚合影视.py",
       "ext": ""
     },
     {
@@ -713,6 +692,81 @@
       "searchable": 1,
       "quickSearch": 0,
       "filterable": 0
+    },
+    {
+      "key": "gkouav",
+      "name": "工口av",
+      "type": 3,
+      "api": "py/18㊙️工口av.py",
+      "searchable": 1,
+      "quickSearch": 0,
+      "filterable": 0
+    },
+    {
+      "key": "ppzn",
+      "name": "啪啪指南",
+      "type": 3,
+      "api": "py/18㊙️啪啪指南.py",
+      "searchable": 1,
+      "quickSearch": 0,
+      "filterable": 1
+    },
+    {
+      "key": "hscs",
+      "name": "黄色超市",
+      "type": 3,
+      "api": "py/18㊙️黄色超市.py",
+      "searchable": 1,
+      "quickSearch": 0,
+      "filterable": 0
+    },
+    {
+      "key": "j8yy",
+      "name": "J8影院",
+      "type": 3,
+      "api": "py/18㊙️J8影院.py",
+      "searchable": 1,
+      "quickSearch": 0,
+      "filterable": 1
+    },
+    {
+      "key": "lfg",
+      "name": "龙凤阁",
+      "type": 3,
+      "api": "py/18㊙️龙凤阁.py",
+      "searchable": 1,
+      "quickSearch": 0,
+      "filterable": 1
+    },
+    {
+      "key": "hllt",
+      "name": "黑料论坛",
+      "type": 3,
+      "api": "py/18㊙️黑料论坛.py",
+      "searchable": 1,
+      "quickSearch": 0,
+      "filterable": 1
+    },
+    {
+      "key": "媚惑山庄",
+      "name": "媚惑山庄",
+      "type": 3,
+      "api": "https://raw.githubusercontent.com/jwarrenrzflynn/TVpy/main/py/18㊙️媚惑山庄.py",
+      "ext": ""
+    },
+    {
+      "key": "茎洞入口",
+      "name": "茎洞入口",
+      "type": 3,
+      "api": "https://raw.githubusercontent.com/jwarrenrzflynn/TVpy/main/py/18㊙️茎洞入口.py",
+      "ext": ""
+    },
+    {
+      "key": "黄上黄",
+      "name": "黄上黄",
+      "type": 3,
+      "api": "https://raw.githubusercontent.com/jwarrenrzflynn/TVpy/main/py/18㊙️黄上黄.py",
+      "ext": ""
     }
   ],
   "parses": [

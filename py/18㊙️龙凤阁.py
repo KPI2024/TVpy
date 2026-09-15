@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-快活林 - 四壳通用Python Spider
-站点: https://xkb.khl4.xyz
+龙凤阁 - 四壳通用Python Spider
+站点: https://fhm.lfg2.skin
 """
 
 import re, json, urllib.request, urllib.parse, urllib.error
@@ -23,9 +23,9 @@ except Exception:
         def destroy(self): pass
 
 class Spider(Spider):
-    domain = "https://xkb.khl4.xyz"
-    siteName = "快活林"
-    CATEGORIES = [("20","亚洲情色"),("21","制服师生"),("22","卡通动漫"),("23","三级伦理"),("24","强奸乱伦"),("25","偷拍自拍"),("26","中文字幕"),("27","欧美性爱"),("28","人妻熟女"),("29","无码专区")]
+    domain = "https://fhm.lfg2.skin"
+    siteName = "龙凤阁"
+    CATEGORIES = [("20","国产自拍"),("21","制服丝袜"),("22","强奸乱伦"),("23","教师学生"),("24","素人系列"),("25","人妻熟女"),("26","日韩无码"),("27","日韩有码"),("28","中文字幕"),("29","欧美风情"),("30","经典伦理"),("31","卡通动漫")]
     UA_CHROME = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
     
     def __init__(self):
@@ -57,10 +57,10 @@ class Spider(Spider):
         videos = []
         seen = set()
         
-        # 找所有article标签
-        articles = re.findall(r'<article[^>]*>(.*?)</article>', html, re.S)
-        for art in articles:
-            m = re.search(r'href="/(\d+)\.html"', art)
+        # 直接找所有li，然后筛选包含视频链接的
+        lis = re.findall(r'<li>(.*?)</li>', html, re.S)
+        for li in lis:
+            m = re.search(r'href="/(\d+)\.html"', li)
             if not m: continue
             vid = m.group(1)
             if vid in seen or len(vid) < 5: continue
@@ -68,14 +68,18 @@ class Spider(Spider):
             
             # 标题
             name = ""
-            t = re.search(r'<h4><a[^>]*>(.*?)</a></h4>', art, re.S)
+            t = re.search(r'title="([^"]+)"', li)
             if t:
-                name = re.sub(r'<[^>]+>', '', t.group(1)).strip()
-            if not name or len(name) < 2: continue
+                name = t.group(1).strip()
+                # 清理title里的多余文字
+                name = re.sub(r'title.*$', '', name).strip()
+            if not name or len(name) < 3: continue
             
             # 封面
             pic = ""
-            p = re.search(r'<img[^>]*src="([^"]+\.(?:jpg|jpeg|png))"', art)
+            p = re.search(r'<img[^>]*data-original="([^"]+\.(?:jpg|jpeg|png))"', li)
+            if not p:
+                p = re.search(r'<img[^>]*src="([^"]+\.(?:jpg|jpeg|png))"', li)
             if p: pic = p.group(1)
             
             videos.append({"vod_id": vid, "vod_name": name, "vod_pic": pic, "vod_remarks": ""})
@@ -83,12 +87,31 @@ class Spider(Spider):
         return videos
 
     def homeContent(self, filter=False):
-        return {"class": [{"type_id": c[0], "type_name": c[1]} for c in self.CATEGORIES], "filters": {}}
+        # 首页标签做子分类（铁律：标签做子分类）
+        tags = ["强奸", "丈母娘", "老太太", "气质", "无码", "人妻", "制服", "自拍", "偷拍", "国产", "日韩", "欧美"]
+        filters = {}
+        for cid, cname in self.CATEGORIES:
+            filters[cid] = [{
+                "key": "tag",
+                "name": "热门标签",
+                "value": [{"n": t, "v": t} for t in tags]
+            }]
+        return {"class": [{"type_id": c[0], "type_name": c[1]} for c in self.CATEGORIES], "filters": filters}
     
     def categoryContent(self, tid, pg, filter=False, extend=None):
         pg = int(pg) if pg else 1
-        url = f"{self.domain}/vodtype/{tid}.html"
-        if pg > 1: url = f"{self.domain}/vodtype/{tid}-{pg}.html"
+        extend = extend or {}
+        tag = extend.get("tag", "")
+        
+        if tag:
+            # 标签搜索页
+            url = f"{self.domain}/s/{tag}.html"
+            if pg > 1: url = f"{self.domain}/s/{tag}-{pg}.html"
+        else:
+            # 普通分类页
+            url = f"{self.domain}/vodtype/{tid}.html"
+            if pg > 1: url = f"{self.domain}/vodtype/{tid}-{pg}.html"
+        
         html = self._fetch(url)
         videos = self._parse_list(html)
         return {"page": pg, "pagecount": pg, "limit": 30, "total": len(videos), "list": videos}

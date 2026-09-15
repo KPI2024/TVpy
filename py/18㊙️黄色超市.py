@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-快活林 - 四壳通用Python Spider
-站点: https://xkb.khl4.xyz
+黄色超市 - 四壳通用Python Spider
+站点: https://yqc.hscs3.fit
 """
 
 import re, json, urllib.request, urllib.parse, urllib.error
@@ -23,9 +23,9 @@ except Exception:
         def destroy(self): pass
 
 class Spider(Spider):
-    domain = "https://xkb.khl4.xyz"
-    siteName = "快活林"
-    CATEGORIES = [("20","亚洲情色"),("21","制服师生"),("22","卡通动漫"),("23","三级伦理"),("24","强奸乱伦"),("25","偷拍自拍"),("26","中文字幕"),("27","欧美性爱"),("28","人妻熟女"),("29","无码专区")]
+    domain = "https://yqc.hscs3.fit"
+    siteName = "黄色超市"
+    CATEGORIES = [("20","亚洲情色"),("21","强奸乱伦"),("22","偷拍自拍"),("23","风骚寡妇"),("24","制服师生"),("25","欧美性爱"),("26","JAV高清"),("27","VR虚拟"),("28","人兽"),("29","人妖"),("30","男同"),("31","女同"),("32","动漫"),("33","三级伦理")]
     UA_CHROME = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
     
     def __init__(self):
@@ -57,10 +57,10 @@ class Spider(Spider):
         videos = []
         seen = set()
         
-        # 找所有article标签
-        articles = re.findall(r'<article[^>]*>(.*?)</article>', html, re.S)
-        for art in articles:
-            m = re.search(r'href="/(\d+)\.html"', art)
+        # article+li结构
+        items = re.findall(r'<article>(.*?)</article>', html, re.S)
+        for item in items:
+            m = re.search(r'href="/cn/home/web/index.php/vod/play/id/(\d+)/sid/\d+/nid/\d+\.html"', item)
             if not m: continue
             vid = m.group(1)
             if vid in seen or len(vid) < 5: continue
@@ -68,27 +68,27 @@ class Spider(Spider):
             
             # 标题
             name = ""
-            t = re.search(r'<h4><a[^>]*>(.*?)</a></h4>', art, re.S)
+            t = re.search(r'<span>(.*?)</span>', item, re.S)
             if t:
-                name = re.sub(r'<[^>]+>', '', t.group(1)).strip()
-            if not name or len(name) < 2: continue
+                name = self._strip_tags(t.group(1)).strip()
+            if not name or len(name) < 3: continue
             
             # 封面
             pic = ""
-            p = re.search(r'<img[^>]*src="([^"]+\.(?:jpg|jpeg|png))"', art)
+            p = re.search(r'<img[^>]*src="([^"]+\.(?:jpg|jpeg|png))"', item)
             if p: pic = p.group(1)
             
             videos.append({"vod_id": vid, "vod_name": name, "vod_pic": pic, "vod_remarks": ""})
         
         return videos
-
+    
     def homeContent(self, filter=False):
         return {"class": [{"type_id": c[0], "type_name": c[1]} for c in self.CATEGORIES], "filters": {}}
     
     def categoryContent(self, tid, pg, filter=False, extend=None):
         pg = int(pg) if pg else 1
-        url = f"{self.domain}/vodtype/{tid}.html"
-        if pg > 1: url = f"{self.domain}/vodtype/{tid}-{pg}.html"
+        url = f"{self.domain}/cn/home/web/index.php/vod/type/id/{tid}.html"
+        if pg > 1: url = f"{self.domain}/cn/home/web/index.php/vod/type/id/{tid}/page/{pg}.html"
         html = self._fetch(url)
         videos = self._parse_list(html)
         return {"page": pg, "pagecount": pg, "limit": 30, "total": len(videos), "list": videos}
@@ -100,23 +100,34 @@ class Spider(Spider):
         for vid in ids:
             try:
                 vid = str(vid).strip()
-                html = self._fetch(f"{self.domain}/{vid}.html")
+                play_url = f"{self.domain}/cn/home/web/index.php/vod/play/id/{vid}/sid/1/nid/1.html"
+                html = self._fetch(play_url)
                 if not html: continue
+                
+                # 从JSON的url字段提取m3u8
                 m3u8 = ""
-                m = re.search(r'(?:const|let|var)\s+rawUrl\s*=\s*[\'"]([^\'"]+)[\'"]', html, re.I)
-                if m: m3u8 = m.group(1)
+                m = re.search(r'\{"flag":"play".*?"url":"([^"]+)"', html, re.S)
+                if m:
+                    m3u8 = m.group(1).replace("\\/", "/")
+                
                 if not m3u8:
                     for x in re.findall(r'https?://[^\s"\'\\]+\.m3u8[^\s"\'\\]*', html):
                         if 'sharer' not in x and 'balecao' not in x: m3u8 = x; break
+                
                 if not m3u8: continue
+                
                 name = f"视频{vid}"
                 t = re.search(r'<title>(.*?)</title>', html, re.S)
                 if t:
                     name = self._strip_tags(t.group(1))
-                    name = re.sub(r'^.*?-', '', name).strip()
+                    name = re.sub(r'^在线播放', '', name)
+                    name = re.sub(r' 第.*$', '', name)
+                    name = name.strip()
+                
                 pic = ""
                 p = re.search(r'(?:data-original|data-src|src)="([^"]+\.(?:jpg|jpeg|png))"', html)
                 if p: pic = p.group(1)
+                
                 result.append({"vod_id": vid, "vod_name": name, "vod_pic": pic, "vod_remarks": self.siteName, "vod_actor": "", "vod_director": "", "vod_content": "", "vod_year": "", "vod_area": "", "vod_tags": "", "vod_douban_score": "", "vod_play_from": self.siteName, "vod_play_url": f"第1集${m3u8}"})
             except: continue
         return {"list": result}
