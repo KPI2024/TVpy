@@ -15,7 +15,7 @@ jobs:
 
       - name: Add upstream
         run: |
-          git remote add upstream https://github.com/原用户名/原仓库.git || true
+          git remote add upstream https://github.com/jwarrenrzflynn/TVpy.git || true
           git fetch upstream main || echo "FETCH_FAILED, keep existing"
           git config user.name "sync-bot"
           git config user.email "sync@example.com"
