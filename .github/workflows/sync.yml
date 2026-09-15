@@ -1,0 +1,28 @@
+name: Sync upstream (add-only)
+on:
+  schedule:
+    - cron: '0 */1 * * *'
+  workflow_dispatch:
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Add upstream
+        run: |
+          git remote add upstream https://github.com/jwarrenrzflynn/TVpy.git || true
+          git fetch upstream main || echo "FETCH_FAILED, keep existing"
+          git config user.name "sync-bot"
+          git config user.email "sync@example.com"
+      - name: Merge (add-only, keep deletions)
+        run: |
+          git merge upstream/main --no-commit --no-ff -X ours || git checkout --ours -- . || true
+          git diff --name-status --diff-filter=D HEAD -- . | awk '{print $2}' | while read f; do
+            [ -n "$f" ] && git checkout HEAD -- "$f" 2>/dev/null || true
+          done
+          git commit -m "sync: merge upstream (add-only)" || echo "nothing to commit"
+      - name: Push
+        run: git push origin HEAD
